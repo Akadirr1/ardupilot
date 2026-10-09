@@ -14,7 +14,7 @@
   - yanal kısım CRUISE'unki (rota kilidi);
   - girişte istek ölçülen yükseklikten GE_HGT'ye en çok GE_SINK hızıyla iner, dipte GE_FLARE zaman sabitiyle birinci mertebe
     yaklaşır (yer etkisine giriş; hız dipte birden kesilmez);
-  - mesafe ölçer 0.5 s okuma vermezse CRUISE'a geçer.
+  - mesafe ölçer 0.5 s geçerli okuma (Good ya da OutOfRangeLow) vermezse CRUISE'a geçer; menzil üstü/dönüş yok geçerli değil.
   Kazançlar wig-vtol-sim'de doğrusal modelden tasarlanır (params/d1_arac.yaml); varsayılanlar 0.
 */
 
@@ -34,10 +34,10 @@ bool ModeGroundEffect::read_height(float &h_m)
         // en kısa menzilin altındayız: en az bu kadar alçak
         h_m = rf->min_distance_orient(ROTATION_PITCH_270);
         return true;
-    case RangeFinder::Status::OutOfRangeHigh:
-        h_m = rf->max_distance_orient(ROTATION_PITCH_270);
-        return true;
     default:
+        // OutOfRangeHigh dahil: sürücüler "dönüş yok"u da menzil üstü bildiriyor (ör. AP_RangeFinder_Benewake), yükseklik
+        // sayılmaz; son değer tutulur, GE_RANGEFINDER_TIMEOUT_MS sonra CRUISE (stok kod da yalnız Good'u kullanıyor:
+        // ArduPlane/altitude.cpp, AP_NavEKF3_Measurements.cpp)
         return false;
     }
 }
