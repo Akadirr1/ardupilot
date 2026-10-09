@@ -70,6 +70,7 @@ public:
 #if MODE_AUTOLAND_ENABLED
         AUTOLAND      = 26,
 #endif
+        GROUND_EFFECT = 27,  // wig-vtol-sim: yer etkisi yükseklik modu (mode_groundeffect.cpp)
 
     // Mode number 30 reserved for "offboard" for external/lua control.
     };
@@ -697,6 +698,38 @@ protected:
     bool locked_heading;
     int32_t locked_heading_cd;
     uint32_t lock_timer_ms;
+};
+
+// wig-vtol-sim: yer etkisi yükseklik modu. Yanal kısım CRUISE'unki (rota kilidi); yükseklik doğrudan mesafe ölçerden
+// (EKF'nin yüksekliği değil), dış yükseklik döngüsü nav_pitch_cd'yi, hız döngüsü gazı verir; iç yunuslama ve yatış
+// döngüleri stok (Mode::run, stabilize_*).
+class ModeGroundEffect : public ModeCruise
+{
+public:
+
+    Number mode_number() const override { return Number::GROUND_EFFECT; }
+    const char *name() const override { return "GEFFECT"; }
+    const char *name4() const override { return "GEFF"; }
+
+    void update() override;
+
+    bool does_auto_throttle() const override { return false; }
+    bool does_automatic_thermal_switch() const override { return false; }
+
+protected:
+
+    bool _enter() override;
+
+private:
+
+    // en son okunan yükseklik [m]; okuma yoksa false
+    bool read_height(float &h_m);
+
+    float h_filt;         // süzülmüş radar yüksekliği [m]
+    float h_dem;          // yükseklik isteği [m] (girişte ölçülenden GE_HGT'ye GE_SINK hızıyla)
+    float i_hgt;          // yükseklik integratörü [deg]
+    float i_spd;          // hız integratörü [%]
+    uint32_t last_good_ms;
 };
 
 #if HAL_ADSB_ENABLED

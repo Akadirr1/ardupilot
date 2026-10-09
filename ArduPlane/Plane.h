@@ -161,6 +161,7 @@ public:
     friend class ModeFBWA;
     friend class ModeFBWB;
     friend class ModeCruise;
+    friend class ModeGroundEffect;
     friend class ModeAutoTune;
     friend class ModeAuto;
     friend class ModeRTL;
@@ -311,6 +312,7 @@ private:
     ModeFBWA mode_fbwa;
     ModeFBWB mode_fbwb;
     ModeCruise mode_cruise;
+    ModeGroundEffect mode_groundeffect;
     ModeAutoTune mode_autotune;
     ModeAuto mode_auto;
     ModeRTL mode_rtl;

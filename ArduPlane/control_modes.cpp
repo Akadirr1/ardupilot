@@ -31,6 +31,9 @@ Mode *Plane::mode_from_mode_num(const enum Mode::Number num)
     case Mode::Number::CRUISE:
         ret = &mode_cruise;
         break;
+    case Mode::Number::GROUND_EFFECT:
+        ret = &mode_groundeffect;
+        break;
     case Mode::Number::AUTOTUNE:
         ret = &mode_autotune;
         break;

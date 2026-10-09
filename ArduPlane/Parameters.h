@@ -594,6 +594,18 @@ public:
 #if AP_PLANE_SYSTEMID_ENABLED
     AP_SystemID systemid;
 #endif
+
+    // wig-vtol-sim: yer etkisi yükseklik modu (mode_groundeffect.cpp)
+    AP_Float ge_hgt;
+    AP_Float ge_sink;
+    AP_Float ge_hgt_p;
+    AP_Float ge_hgt_i;
+    AP_Float ge_hgt_d;
+    AP_Float ge_hgt_imax;
+    AP_Float ge_spd_p;
+    AP_Float ge_spd_i;
+    AP_Float ge_spd_imax;
+    AP_Float ge_hgt_flt;
 };
 
 extern const AP_Param::Info var_info[];

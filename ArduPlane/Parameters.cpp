@@ -1298,6 +1298,72 @@ const AP_Param::GroupInfo ParametersG2::var_info[] = {
     AP_GROUPINFO("RNGFND_LND_DIST", 41, ParametersG2, rangefinder_land_engage_dist_m, 0),
 #endif
 
+    // wig-vtol-sim: yer etkisi yükseklik modu (GROUND_EFFECT, mode_groundeffect.cpp). Varsayılanlar 0: mod, değerler
+    // verilmeden kullanılmasın diye girişte GE_HGT > 0 ve GE_SINK > 0 ister.
+
+    // @Param: GE_HGT
+    // @DisplayName: Ground effect height demand
+    // @Description: Height demand in GROUND_EFFECT mode, as read by the downward rangefinder (sensor to surface).
+    // @Units: m
+    // @User: Advanced
+    AP_GROUPINFO("GE_HGT", 42, ParametersG2, ge_hgt, 0),
+
+    // @Param: GE_SINK
+    // @DisplayName: Ground effect height demand rate
+    // @Description: Maximum rate at which the height demand moves from the height at mode entry to GE_HGT.
+    // @Units: m/s
+    // @User: Advanced
+    AP_GROUPINFO("GE_SINK", 43, ParametersG2, ge_sink, 0),
+
+    // @Param: GE_HGT_P
+    // @DisplayName: Ground effect height P
+    // @Description: Pitch demand per metre of height error.
+    // @Units: deg/m
+    // @User: Advanced
+    AP_GROUPINFO("GE_HGT_P", 44, ParametersG2, ge_hgt_p, 0),
+
+    // @Param: GE_HGT_I
+    // @DisplayName: Ground effect height I
+    // @Description: Pitch demand integrator gain on height error.
+    // @User: Advanced
+    AP_GROUPINFO("GE_HGT_I", 45, ParametersG2, ge_hgt_i, 0),
+
+    // @Param: GE_HGT_D
+    // @DisplayName: Ground effect height D
+    // @Description: Pitch demand per m/s of climb rate error (demand rate minus EKF climb rate).
+    // @User: Advanced
+    AP_GROUPINFO("GE_HGT_D", 46, ParametersG2, ge_hgt_d, 0),
+
+    // @Param: GE_HGT_IMAX
+    // @DisplayName: Ground effect height integrator limit
+    // @Units: deg
+    // @User: Advanced
+    AP_GROUPINFO("GE_HGT_IMAX", 47, ParametersG2, ge_hgt_imax, 0),
+
+    // @Param: GE_SPD_P
+    // @DisplayName: Ground effect airspeed P
+    // @Description: Throttle per m/s of airspeed error (AIRSPEED_CRUISE minus airspeed), added to TRIM_THROTTLE.
+    // @User: Advanced
+    AP_GROUPINFO("GE_SPD_P", 48, ParametersG2, ge_spd_p, 0),
+
+    // @Param: GE_SPD_I
+    // @DisplayName: Ground effect airspeed I
+    // @User: Advanced
+    AP_GROUPINFO("GE_SPD_I", 49, ParametersG2, ge_spd_i, 0),
+
+    // @Param: GE_SPD_IMAX
+    // @DisplayName: Ground effect airspeed integrator limit
+    // @Units: %
+    // @User: Advanced
+    AP_GROUPINFO("GE_SPD_IMAX", 50, ParametersG2, ge_spd_imax, 0),
+
+    // @Param: GE_HGT_FLT
+    // @DisplayName: Ground effect height filter
+    // @Description: First order low pass cutoff on the rangefinder height; 0 disables the filter.
+    // @Units: Hz
+    // @User: Advanced
+    AP_GROUPINFO("GE_HGT_FLT", 51, ParametersG2, ge_hgt_flt, 0),
+
     AP_GROUPEND
 };
 
