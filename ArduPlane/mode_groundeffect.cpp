@@ -7,7 +7,8 @@
   Başlangıç noktası squilter'ın yer etkisi modu (wig-vtol-sim sim/ardupilot/port_215fb9a.patch). Farklar:
   - yükseklik yalnız aşağı bakan mesafe ölçerden (EKF'nin yükseklik kestirimi kullanılmaz); tırmanma hızı EKF'den;
   - yükseklik elevatörü doğrudan verir (wig-vtol-sim kullanıcı kararı: stok açı döngüsü ve girdi şekillendirici atlanır):
-    çıkış = GE_ELEV + P·e + I∫e + D·(ḣ_dem − ḣ) − GE_PTCH_T·(θ − PTCH_TRIM_DEG) − GE_PTCH_Q·q, cd/100 (±45 tam sapma);
+    çıkış = GE_ELEV + P·e + I∫e + D·(ḣ_dem − ḣ) − GE_PTCH_T·(θ − PTCH_TRIM_DEG − γ_dem) − GE_PTCH_Q·q, cd/100 (±45 tam
+    sapma); γ_dem = ḣ_dem/AIRSPEED_CRUISE (istek rampasında gereken yörünge açısı, ileri besleme);
     yatış ve sapma stok (stabilize_roll, stabilize_yaw);
   - gaz hava hızından (AIRSPEED_CRUISE), TRIM_THROTTLE etrafında P + I; squilter'da gaz yükseklik hatasındandı;
   - yanal kısım CRUISE'unki (rota kilidi);
@@ -59,13 +60,14 @@ bool ModeGroundEffect::_enter()
     return true;
 }
 
-// D terimi ve tutum geri beslemesi: D·(ḣ_dem − ḣ) − T·(θ − PTCH_TRIM_DEG) − Q·q  [cd/100]
+// D terimi ve tutum geri beslemesi: D·(ḣ_dem − ḣ) − T·(θ − PTCH_TRIM_DEG − γ_dem) − Q·q  [cd/100]
 float ModeGroundEffect::pitch_terms(float hdot_dem)
 {
     Vector3f vel;
     hdot = plane.ahrs.get_velocity_NED(vel) ? -vel.z : 0.0;
+    const float gamma_dem = degrees(hdot_dem / MAX(plane.aparm.airspeed_cruise.get(), 1.0f));
     return plane.g2.ge_hgt_d * (hdot_dem - hdot)
-           - plane.g2.ge_ptch_t * (plane.ahrs.get_pitch_deg() - plane.g.pitch_trim)
+           - plane.g2.ge_ptch_t * (plane.ahrs.get_pitch_deg() - plane.g.pitch_trim - gamma_dem)
            - plane.g2.ge_ptch_q * degrees(plane.ahrs.get_gyro().y);
 }
 
