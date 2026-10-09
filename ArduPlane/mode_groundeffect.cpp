@@ -12,7 +12,8 @@
     yatış ve sapma stok (stabilize_roll, stabilize_yaw);
   - gaz hava hızından (AIRSPEED_CRUISE), TRIM_THROTTLE etrafında P + I; squilter'da gaz yükseklik hatasındandı;
   - yanal kısım CRUISE'unki (rota kilidi);
-  - girişte istek ölçülen yükseklikten GE_HGT'ye en çok GE_SINK hızıyla iner (yer etkisine giriş);
+  - girişte istek ölçülen yükseklikten GE_HGT'ye en çok GE_SINK hızıyla iner, dipte GE_FLARE zaman sabitiyle birinci mertebe
+    yaklaşır (yer etkisine giriş; hız dipte birden kesilmez);
   - mesafe ölçer 0.5 s okuma vermezse CRUISE'a geçer.
   Kazançlar wig-vtol-sim'de doğrusal modelden tasarlanır (params/d1_arac.yaml); varsayılanlar 0.
 */
@@ -108,8 +109,10 @@ void ModeGroundEffect::update()
         return;
     }
 
-    // istek: girişteki yükseklikten GE_HGT'ye en çok GE_SINK hızıyla
-    const float step = constrain_float(plane.g2.ge_hgt - h_dem, -plane.g2.ge_sink * dt, plane.g2.ge_sink * dt);
+    // istek: girişteki yükseklikten GE_HGT'ye en çok GE_SINK hızıyla, dipte GE_FLARE zaman sabitiyle
+    const float gap = plane.g2.ge_hgt - h_dem;
+    const float rate = is_positive(plane.g2.ge_flare) ? MIN(plane.g2.ge_sink.get(), fabsf(gap) / plane.g2.ge_flare) : plane.g2.ge_sink.get();
+    const float step = constrain_float(gap, -rate * dt, rate * dt);
     h_dem += step;
     const float hdot_dem = is_positive(dt) ? step / dt : 0.0;
 

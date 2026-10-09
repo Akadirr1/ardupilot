@@ -1381,6 +1381,13 @@ const AP_Param::GroupInfo ParametersG2::var_info[] = {
     // @User: Advanced
     AP_GROUPINFO("GE_ELEV", 54, ParametersG2, ge_elev, 0),
 
+    // @Param: GE_FLARE
+    // @DisplayName: Ground effect entry flare time constant
+    // @Description: Near GE_HGT the height demand approaches it with this first order time constant (demand rate is the smaller of GE_SINK and the remaining height over GE_FLARE); 0 disables (constant rate to GE_HGT).
+    // @Units: s
+    // @User: Advanced
+    AP_GROUPINFO("GE_FLARE", 55, ParametersG2, ge_flare, 0),
+
     AP_GROUPEND
 };
 
