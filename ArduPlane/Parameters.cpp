@@ -1317,26 +1317,25 @@ const AP_Param::GroupInfo ParametersG2::var_info[] = {
 
     // @Param: GE_HGT_P
     // @DisplayName: Ground effect height P
-    // @Description: Pitch demand per metre of height error.
-    // @Units: deg/m
+    // @Description: Elevator output per metre of height error (output in centidegrees/100: 45 is full deflection).
     // @User: Advanced
     AP_GROUPINFO("GE_HGT_P", 44, ParametersG2, ge_hgt_p, 0),
 
     // @Param: GE_HGT_I
     // @DisplayName: Ground effect height I
-    // @Description: Pitch demand integrator gain on height error.
+    // @Description: Elevator output integrator gain on height error.
     // @User: Advanced
     AP_GROUPINFO("GE_HGT_I", 45, ParametersG2, ge_hgt_i, 0),
 
     // @Param: GE_HGT_D
     // @DisplayName: Ground effect height D
-    // @Description: Pitch demand per m/s of climb rate error (demand rate minus EKF climb rate).
+    // @Description: Elevator output per m/s of climb rate error (demand rate minus EKF climb rate).
     // @User: Advanced
     AP_GROUPINFO("GE_HGT_D", 46, ParametersG2, ge_hgt_d, 0),
 
     // @Param: GE_HGT_IMAX
     // @DisplayName: Ground effect height integrator limit
-    // @Units: deg
+    // @Description: Limit of the height integrator, in elevator output (centidegrees/100).
     // @User: Advanced
     AP_GROUPINFO("GE_HGT_IMAX", 47, ParametersG2, ge_hgt_imax, 0),
 
@@ -1363,6 +1362,24 @@ const AP_Param::GroupInfo ParametersG2::var_info[] = {
     // @Units: Hz
     // @User: Advanced
     AP_GROUPINFO("GE_HGT_FLT", 51, ParametersG2, ge_hgt_flt, 0),
+
+    // @Param: GE_PTCH_T
+    // @DisplayName: Ground effect attitude gain
+    // @Description: Elevator output per degree of pitch above PTCH_TRIM_DEG (subtracted).
+    // @User: Advanced
+    AP_GROUPINFO("GE_PTCH_T", 52, ParametersG2, ge_ptch_t, 0),
+
+    // @Param: GE_PTCH_Q
+    // @DisplayName: Ground effect pitch rate gain
+    // @Description: Elevator output per deg/s of pitch rate (subtracted).
+    // @User: Advanced
+    AP_GROUPINFO("GE_PTCH_Q", 53, ParametersG2, ge_ptch_q, 0),
+
+    // @Param: GE_ELEV
+    // @DisplayName: Ground effect elevator trim
+    // @Description: Elevator output at the ground effect cruise trim (centidegrees/100).
+    // @User: Advanced
+    AP_GROUPINFO("GE_ELEV", 54, ParametersG2, ge_elev, 0),
 
     AP_GROUPEND
 };

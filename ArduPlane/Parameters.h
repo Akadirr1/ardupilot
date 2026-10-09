@@ -606,6 +606,9 @@ public:
     AP_Float ge_spd_i;
     AP_Float ge_spd_imax;
     AP_Float ge_hgt_flt;
+    AP_Float ge_ptch_t;
+    AP_Float ge_ptch_q;
+    AP_Float ge_elev;
 };
 
 extern const AP_Param::Info var_info[];

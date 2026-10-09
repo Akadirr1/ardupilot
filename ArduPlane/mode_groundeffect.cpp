@@ -6,8 +6,9 @@
 
   Başlangıç noktası squilter'ın yer etkisi modu (wig-vtol-sim sim/ardupilot/port_215fb9a.patch). Farklar:
   - yükseklik yalnız aşağı bakan mesafe ölçerden (EKF'nin yükseklik kestirimi kullanılmaz); tırmanma hızı EKF'den;
-  - dış yükseklik döngüsü nav_pitch_cd'yi verir (P + I + D, D tırmanma hızı hatasında), iç yunuslama ve yatış döngüleri
-    stok (Mode::run → stabilize_pitch: PTCH_TRIM_DEG ve AP_PitchController);
+  - yükseklik elevatörü doğrudan verir (wig-vtol-sim kullanıcı kararı: stok açı döngüsü ve girdi şekillendirici atlanır):
+    çıkış = GE_ELEV + P·e + I∫e + D·(ḣ_dem − ḣ) − GE_PTCH_T·(θ − PTCH_TRIM_DEG) − GE_PTCH_Q·q, cd/100 (±45 tam sapma);
+    yatış ve sapma stok (stabilize_roll, stabilize_yaw);
   - gaz hava hızından (AIRSPEED_CRUISE), TRIM_THROTTLE etrafında P + I; squilter'da gaz yükseklik hatasındandı;
   - yanal kısım CRUISE'unki (rota kilidi);
   - girişte istek ölçülen yükseklikten GE_HGT'ye en çok GE_SINK hızıyla iner (yer etkisine giriş);
@@ -50,10 +51,30 @@ bool ModeGroundEffect::_enter()
     }
     h_filt = h;
     h_dem = h;
-    i_hgt = 0;
     i_spd = 0;
+    // kesintisiz giriş: integratör, ilk çıkış o anki elevatör çıkışına eşit olacak şekilde (IMAX içinde)
+    elev_out = SRV_Channels::get_output_scaled(SRV_Channel::k_elevator) * 0.01;
+    i_hgt = constrain_float(elev_out - plane.g2.ge_elev - pitch_terms(0.0), -plane.g2.ge_hgt_imax, plane.g2.ge_hgt_imax);
     last_good_ms = AP_HAL::millis();
     return true;
+}
+
+// D terimi ve tutum geri beslemesi: D·(ḣ_dem − ḣ) − T·(θ − PTCH_TRIM_DEG) − Q·q  [cd/100]
+float ModeGroundEffect::pitch_terms(float hdot_dem)
+{
+    Vector3f vel;
+    hdot = plane.ahrs.get_velocity_NED(vel) ? -vel.z : 0.0;
+    return plane.g2.ge_hgt_d * (hdot_dem - hdot)
+           - plane.g2.ge_ptch_t * (plane.ahrs.get_pitch_deg() - plane.g.pitch_trim)
+           - plane.g2.ge_ptch_q * degrees(plane.ahrs.get_gyro().y);
+}
+
+void ModeGroundEffect::run()
+{
+    plane.stabilize_roll();
+    SRV_Channels::set_output_scaled(SRV_Channel::k_elevator, elev_out * 100);
+    plane.pitchController.reset();  // stok yunuslama denetleyicisi çalışmıyor (mode_training gibi)
+    plane.stabilize_yaw();
 }
 
 void ModeGroundEffect::update()
@@ -90,14 +111,11 @@ void ModeGroundEffect::update()
     h_dem += step;
     const float hdot_dem = is_positive(dt) ? step / dt : 0.0;
 
-    Vector3f vel;
-    const float hdot = plane.ahrs.get_velocity_NED(vel) ? -vel.z : 0.0;
-
     const float err = h_dem - h_filt;
     const float imax = plane.g2.ge_hgt_imax;
     i_hgt = constrain_float(i_hgt + plane.g2.ge_hgt_i * err * dt, -imax, imax);
-    const float pitch_deg = plane.g2.ge_hgt_p * err + i_hgt + plane.g2.ge_hgt_d * (hdot_dem - hdot);
-    plane.nav_pitch_cd = constrain_int32(pitch_deg * 100, plane.pitch_limit_min * 100, plane.aparm.pitch_limit_max * 100);
+    // ponytail: hız ölçekleyici yok (elevatör etkinliği V²; mod seyir hızı çevresinde, V ≥ 1.2·V_s); geniş hız aralığında gerekirse
+    elev_out = constrain_float(plane.g2.ge_elev + plane.g2.ge_hgt_p * err + i_hgt + pitch_terms(hdot_dem), -45, 45);
 
     // gaz: hava hızı, TRIM_THROTTLE etrafında
     float aspeed;
@@ -114,12 +132,12 @@ void ModeGroundEffect::update()
     // @Field: H: filtered rangefinder height
     // @Field: HD: height demand
     // @Field: HDot: EKF climb rate
-    // @Field: PD: pitch demand (relative to PTCH_TRIM_DEG)
+    // @Field: E: elevator output (centidegrees/100)
     // @Field: IH: height integrator
     // @Field: VE: airspeed error
     // @Field: Thr: throttle demand
     // @Field: IV: airspeed integrator
-    AP::logger().WriteStreaming("GEFF", "TimeUS,H,HD,HDot,PD,IH,VE,Thr,IV", "Qffffffff",
-                                AP_HAL::micros64(), h_filt, h_dem, hdot, pitch_deg, i_hgt, v_err, thr, i_spd);
+    AP::logger().WriteStreaming("GEFF", "TimeUS,H,HD,HDot,E,IH,VE,Thr,IV", "Qffffffff",
+                                AP_HAL::micros64(), h_filt, h_dem, hdot, elev_out, i_hgt, v_err, thr, i_spd);
 #endif
 }

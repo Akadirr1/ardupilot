@@ -712,6 +712,7 @@ public:
     const char *name4() const override { return "GEFF"; }
 
     void update() override;
+    void run() override;
 
     bool does_auto_throttle() const override { return false; }
     bool does_automatic_thermal_switch() const override { return false; }
@@ -724,10 +725,13 @@ private:
 
     // en son okunan yükseklik [m]; okuma yoksa false
     bool read_height(float &h_m);
+    float pitch_terms(float hdot_dem);
 
     float h_filt;         // süzülmüş radar yüksekliği [m]
     float h_dem;          // yükseklik isteği [m] (girişte ölçülenden GE_HGT'ye GE_SINK hızıyla)
-    float i_hgt;          // yükseklik integratörü [deg]
+    float i_hgt;          // yükseklik integratörü [cd/100]
+    float elev_out;       // elevatör çıkışı [cd/100]
+    float hdot;           // EKF tırmanma hızı [m/s]
     float i_spd;          // hız integratörü [%]
     uint32_t last_good_ms;
 };
