@@ -610,6 +610,7 @@ public:
     AP_Float ge_ptch_q;
     AP_Float ge_elev;
     AP_Float ge_flare;
+    AP_Float ge_rf_tmo;
 };
 
 extern const AP_Param::Info var_info[];

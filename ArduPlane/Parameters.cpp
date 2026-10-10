@@ -1388,6 +1388,13 @@ const AP_Param::GroupInfo ParametersG2::var_info[] = {
     // @User: Advanced
     AP_GROUPINFO("GE_FLARE", 55, ParametersG2, ge_flare, 0),
 
+    // @Param: GE_RF_TMO
+    // @DisplayName: Ground effect rangefinder timeout
+    // @Description: GROUND_EFFECT switches to CRUISE when the downward rangefinder gives no valid height (Good or OutOfRangeLow) for this long; 0: at the first invalid reading.
+    // @Units: s
+    // @User: Advanced
+    AP_GROUPINFO("GE_RF_TMO", 56, ParametersG2, ge_rf_tmo, 0),
+
     AP_GROUPEND
 };
 

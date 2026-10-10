@@ -14,11 +14,10 @@
   - yanal kısım CRUISE'unki (rota kilidi);
   - girişte istek ölçülen yükseklikten GE_HGT'ye en çok GE_SINK hızıyla iner, dipte GE_FLARE zaman sabitiyle birinci mertebe
     yaklaşır (yer etkisine giriş; hız dipte birden kesilmez);
-  - mesafe ölçer 0.5 s geçerli okuma (Good ya da OutOfRangeLow) vermezse CRUISE'a geçer; menzil üstü/dönüş yok geçerli değil.
+  - mesafe ölçer GE_RF_TMO s geçerli okuma (Good ya da OutOfRangeLow) vermezse CRUISE'a geçer; menzil üstü/dönüş yok geçerli
+    değil.
   Kazançlar wig-vtol-sim'de doğrusal modelden tasarlanır (params/d1_arac.yaml); varsayılanlar 0.
 */
-
-static constexpr uint32_t GE_RANGEFINDER_TIMEOUT_MS = 500;
 
 bool ModeGroundEffect::read_height(float &h_m)
 {
@@ -36,7 +35,7 @@ bool ModeGroundEffect::read_height(float &h_m)
         return true;
     default:
         // OutOfRangeHigh dahil: sürücüler "dönüş yok"u da menzil üstü bildiriyor (ör. AP_RangeFinder_Benewake), yükseklik
-        // sayılmaz; son değer tutulur, GE_RANGEFINDER_TIMEOUT_MS sonra CRUISE (stok kod da yalnız Good'u kullanıyor:
+        // sayılmaz; son değer tutulur, GE_RF_TMO sonra CRUISE (stok kod da yalnız Good'u kullanıyor:
         // ArduPlane/altitude.cpp, AP_NavEKF3_Measurements.cpp)
         return false;
     }
@@ -103,7 +102,7 @@ void ModeGroundEffect::update()
         last_good_ms = now;
         const float a = is_positive(plane.g2.ge_hgt_flt) ? calc_lowpass_alpha_dt(dt, plane.g2.ge_hgt_flt) : 1.0;
         h_filt += a * (h - h_filt);
-    } else if (now - last_good_ms > GE_RANGEFINDER_TIMEOUT_MS) {
+    } else if (now - last_good_ms > uint32_t(MAX(plane.g2.ge_rf_tmo.get(), 0.0f) * 1000.0f)) {
         gcs().send_text(MAV_SEVERITY_WARNING, "GEFF: rangefinder lost");
         IGNORE_RETURN(plane.set_mode(plane.mode_cruise, ModeReason::UNAVAILABLE));
         return;
